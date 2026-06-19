@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestro Universo - Daniela</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background-color: #020005;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            perspective: 1000px;
+            width: 100vw;
+            height: 100vh;
+            user-select: none;
+        }
+
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #universo-3d {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            cursor: grab;
+            transform-style: preserve-3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            display: none;
+            transform: rotateX(0deg) rotateY(0deg);
+            transition: opacity 0.8s ease;
+        }
+
+        #universo-3d:active {
+            cursor: grabbing;
+        }
+
+        .card-bienvenida {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            background: rgba(12, 5, 18, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 71, 108, 0.3);
+            padding: 40px 35px;
+            border-radius: 24px;
+            text-align: center;
+            width: 90%;
+            max-width: 460px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            transition: opacity 0.4s ease;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            color: #ff477e;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .message {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            margin-bottom: 35px;
+            white-space: pre-line;
+            color: #f1f2f6;
+        }
+
+        .btn-explorar {
+            background: linear-gradient(45deg, #ff4757, #ff477e);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-explorar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 71, 126, 0.8);
+        }
+
+        .planeta {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .esfera-media {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: inset -15px -15px 25px rgba(0,0,0,0.8), 0 0 15px rgba(255, 71, 126, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            background: #11051a;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .esfera-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .planeta:hover .esfera-media {
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.7), 0 0 30px #ff477e;
+            border-color: #ff477e;
+            transform: scale(1.1);
+        }
+
+        .mensaje-flotante {
+            position: absolute;
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%) translateZ(10px);
+            background: rgba(10, 3, 15, 0.95);
+            border: 1px solid rgba(255, 71, 126, 0.4);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            text-align: center;
+            width: 240px;
+            pointer-events: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .planeta:hover .mensaje-flotante {
+            opacity: 1;
+        }
+
+        #indicador {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(5, 1, 10, 0.8);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <div id="indicador">Arrastra el mouse para girar el espacio. Pasa el cursor por los recuerdos.</div>
+
+    <div class="card-bienvenida" id="start-screen">
+        <div style="font-size: 42px; margin-bottom: 12px;">❤️</div>
+        <div class="title">Para: Daniela</div>
+        <div class="message">Fuiste todo mi universo.
+
+Tengo que seguir adelante; extrañarte en esta soledad no me gusta... no es el tipo de cosas que suelo decir ni sé expresarme bien, pero quédate con esto:
+
+Vive, que yo viviré por ti. Te amo.</div>
+        <button class="btn-explorar" onclick="entrarAlUniverso()">Recordar nuestro universo</button>
+    </div>
+
+    <div id="universo-3d"></div>
+
+    <script>
+        const planetasDatos = [
+            { img: "WhatsApp Image 2026-06-18 at 8.10.59 PM (1).jpeg", txt: '"Cada risa y cada instante juntos se quedan grabados aquí."', pos: [-350, -120, -100] },
+            { img: "WhatsApp Image 2026-06-18 at 8.10.59 PM.jpeg", txt: '"Tu fe en nosotros es algo que atesoro profundamente."', pos: [320, 150, -200] },
+            { img: "WhatsApp Image 2026-06-18 at 8.11.00 PM (1).jpeg", txt: '"Los mejores recuerdos no se borran, se transforman."', pos: [-100, 280, -400] },
+            { img: "WhatsApp Image 2026-06-18 at 8.11.00 PM (2).jpeg", txt: '"Te deseo lo mejor en cada paso de tu propio camino."', pos:
